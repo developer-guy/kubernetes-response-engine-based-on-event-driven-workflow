@@ -11,4 +11,4 @@ customRules:
     - macro: user_known_contact_k8s_api_server_activities
       condition: >
         (container.image.repository = "gcr.io/tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink") or
-        (container.image.repository = "quay.io/nissessenap/poddeleter") or (container.image.repository = "argoproj/sensor")
+        (container.image.repository = "devopps/kubernetes-response-engine-based-on-event-driven-workflow") or (container.image.repository = "argoproj/sensor")
