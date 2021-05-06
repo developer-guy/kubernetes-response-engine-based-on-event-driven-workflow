@@ -234,9 +234,9 @@ argo version
 Now, let's test the whole environment. We are going to create an alpine based container, then we'll exec into it,once we exec into the container, Falco will detect it. After that we should see the status of the Pod as _Terminating_.
 ```bash
 $ kubectl run alpine --namespace default --image=alpine --restart='Never' -- sh -c "sleep 600"
-pod/alpine create
+pod/alpine created
 
-$ kubectl exec -i --tty alpine --namespace default -- sh -c "uptime"
+$ kubectl exec -i --tty alpine --namespace default -- sh -c "uptime" # this will trigger the event
 ```
 
 You should see the similar outputs like the following screen:
