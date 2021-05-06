@@ -1,29 +1,30 @@
 # Kubernetes Response Engine based on Event-Driven Workflow using Argo Events & Argo Workflows
 
-In earlier versions of a concept called _Kubernetes Response Engine_, we have used serverless platforms which run on top of Kubernetes such as Kubeless, OpenFaaS, and Knative. In a nutshell, this engine aims to provide a pipeline to users that they can take an action againts alerts which detected by Falco.
+We presented in previous blog posts the concept called _Kubernetes Response Engine_, to do so we have used serverless platforms running on top of Kubernetes such as Kubeless, OpenFaaS, and Knative. In a nutshell, this engine aims to provide to users automatic action against threats detected by Falco.
 
-If you want to get more detail about the concept and how we have used serverless platforms with this concept, please follow the links below:
+If you want to get more details about the concept and how we use serverless platforms for this concept, please follow the links below:
 
 > * [Kubernetes Response Engine, Part 1 : Falcosidekick + Kubeless](https://falco.org/blog/falcosidekick-reponse-engine-part-1-kubeless/)
 > * [Kubernetes Response Engine, Part 2 : Falcosidekick + OpenFaas](https://falco.org/blog/falcosidekick-reponse-engine-part-2-openfaas/)
+> * [Kubernetes Response Engine, Part 3 : Falcosidekick + Knative](https://falco.org/blog/falcosidekick-reponse-engine-part-3-knative/)
 
-But, one day [Edvin](https://github.com/NissesSenap) came with a great idea and asked can we use Cloud Native CI/CD systems to implement that same kind of scenario. Then, he used _Tekton_ and _Tekton Trigger_ to implement a _Kubernetes Response Engine_, to get more detail about his work, please follow this [repository](https://github.com/NissesSenap/falcosidekick-tekton).
+Recently, a community member, [Edvin](https://github.com/NissesSenap), came with the great idea to use a Cloud Native Workflow system to implement same kind of scenario. Following that, he implemented it by using _Tekton_ and _Tekton Trigger_. To get more details about his work, please follow this [repository](https://github.com/NissesSenap/falcosidekick-tekton).
 
-After that, we realized that we can use _Argo Events_ and _Argo Workflows_ to do the same thing.This repository aims to provide an overview about how we can use these tools to implement _Kubernetes Response Engine_
+After that, we realized that we can use _Argo Events_ and _Argo Workflows_ to do the same thing. This repository provides an overview of how we can use these tools to implement a _Kubernetes Response Engine_
 
-Let's start with quick introduction of the tooling.
+Let's start with quick a introduction of the tooling.
 
 # What is Falco? [¶](github.com/falcosecurity/falco)
 Falco, the open source cloud native runtime security project, is one of the leading open source Kubernetes threat detection engines. Falco was created by Sysdig in 2016 and is the first runtime security project to join CNCF as an incubation-level project.
 
 # What is Falcosidekick? [¶](https://github.com/falcosecurity/falcosidekick) 
-A simple daemon for enhancing available outputs for Falco. It takes a Falco's event and forwards it to different outputs.
+A simple daemon for connection Falco to your ecosystem (alerting, logging, metrology, etc).
 
 # What is Argo Workflows? [¶](https://argoproj.github.io/argo-workflows/#what-is-argo-workflows)
-Argo Workflows is an open source container-native workflow engine for orchestrating parallel jobs on Kubernetes. Argo Workflows is implemented as a Kubernetes CRD (Custom Resource Definition).
+Argo Workflows is an open source container-native workflow engine for orchestrating parallel jobs on Kubernetes. Argo Workflows are declared through a Kubernetes CRD (Custom Resource Definition).
 
 # What is Argo Events? [¶](https://argoproj.github.io/argo-events/#what-is-argo-events)
-Argo Events is an event-driven workflow automation framework for Kubernetes which helps you trigger K8s objects, Argo Workflows, Serverless workloads, etc. on events from variety of sources like webhook, s3, schedules, messaging queues, gcp pubsub, sns, sqs, etc.
+Argo Events is an event-driven workflow automation framework for Kubernetes which helps you trigger K8s objects, Argo Workflows, Serverless workloads, and others by events from variety of sources like webhook, s3, schedules, messaging queues, gcp pubsub, sns, sqs, etc.
 
 # Prerequisites
 
@@ -35,7 +36,7 @@ Argo Events is an event-driven workflow automation framework for Kubernetes whic
 
 # Demo
 
-Let's start with explaining a little bit what we want to achieve in this demo. Basically, Falco the container runtime security tool is going to detect a unexpected behaviour on the host, then triggers an alert and send it to the Falcosidekick, Falcosidekick has _Webhook_ output type that we can configure, we configure this webhook output type to be able to notify webhook type of event source of the _Argo Events_, then _Argo Events_ trigger the [argoWorkFlowTrigger](https://github.com/argoproj/argo-events/blob/master/api/sensor.md#argoproj.io/v1alpha1.ArgoWorkflowTrigger) type of trigger of the _Argo Workflows_, and this workflow will create a _pod delete_ container, and this container will delete the Pod that cause an unexpected behaviour.
+Let's start with explaining a little bit what we want to achieve in this demo. Basically, Falco, the container runtime security tool, is going to detect an unexpected behaviour at host level, then it will trigger an alert and send it to Falcosidekick. Falcosidekick has _Webhook_ output type we can configure to notify the event source of _Argo Events_. Then, _Argo Events_  will trigger the [argoWorkFlowTrigger](https://github.com/argoproj/argo-events/blob/master/api/sensor.md#argoproj.io/v1alpha1.ArgoWorkflowTrigger) type of trigger of _Argo Workflows_, and this workflow will create a _pod delete_ pod in charge of terminating the compromised pod.
 
 Falco --> Falcosidekick W/webhook --> Argo Events W/webhook --> Argo Workflows W/argoWorkFlowTrigger
 
@@ -129,6 +130,7 @@ minio-58977b4b48-dnnwx                1/1     Running   0          5m32s
 postgres-6b5c55f477-dp9n2             1/1     Running   0          5m32s
 workflow-controller-d9cbfcc86-tm2kf   1/1     Running   2          5m32s
 ```
+
 Let's install Falco and Falcosidekick.
 ```bash
 $ helm upgrade --install falco falcosecurity/falco \
@@ -151,7 +153,7 @@ security issues.
 No further action should be required.
 ```
 
-Let's verify if everything is working before move on to the next step.
+Let's verify if all components for falco are up and running.
 ```bash
 $ kubectl get pods --namespace falco
 NAME                                  READY   STATUS    RESTARTS   AGE
@@ -160,7 +162,7 @@ falco-falcosidekick-9f5dc66f5-wnm2r   1/1     Running   0          68s
 falco-zwxwz                           1/1     Running   0          68s
 ```
 
-Now, we are good to go to set up our workflow by creating event source and the trigger.
+Now, we are ready to set up our workflow by creating the event source and the trigger.
 ```bash
 # Create event source
 $ kubectl apply -f webhooks/webhook.yaml
@@ -211,9 +213,11 @@ webhook-eventsource-z9bg6-6769c7bbc8-c6tff   1/1     Running   0          8m11s
 webhook-sensor-44w7w-7dcb9f886d-bnh8f        1/1     Running   0          74s # <- Pod will create workflow.
 ```
 
-> I'm using google/ko project to build and push container image, but you don't have to do this, I already built an image and pushed it to the registry, but if you want to build your own image install google/ko project and run the command below and change the image version inside sensors/sensors-workflow.yaml                              $ KO_DOCKER_REPO=devopps ko publish . --push=true -B
+> We use google/ko project to build and push container images, but you don't have to do this, we already built an image and pushed it to the registry. If you want to build your own image, install google/ko project and run the command below after having changed the image version inside sensors/sensors-workflow.yaml 
+> `KO_DOCKER_REPO=devopps ko publish . --push=true -B`
 
-There is one more thing left that we need to do, this is installing [argo CLI](https://argoproj.github.io/argo-workflows/cli/) for worklow.
+There is one more thing we need to do, this is installation of [argo CLI](https://argoproj.github.io/argo-workflows/cli/) for managing worklows.
+
 ```bash
 $ # Download the binary
 curl -sLO https://github.com/argoproj/argo/releases/download/v3.0.2/argo-darwin-amd64.gz
@@ -231,7 +235,7 @@ mv ./argo-darwin-amd64 /usr/local/bin/argo
 argo version
 ```
 
-Now, let's test the whole environment. We are going to create an alpine based container, then we'll exec into it,once we exec into the container, Falco will detect it. After that we should see the status of the Pod as _Terminating_.
+Now, let's test the whole environment. We are going to create an alpine based container, then we'll `exec`` into it. At moment we'll exec into the container, Falco will detect it and you should see the status of the Pod as _Terminating_.
 ```bash
 $ kubectl run alpine --namespace default --image=alpine --restart='Never' -- sh -c "sleep 600"
 pod/alpine created
