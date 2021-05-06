@@ -74,7 +74,8 @@ eventbus.argoproj.io/default created
 $ kubectl create namespace argo
 namespace/argo created
 
-$ customresourcedefinition.apiextensions.k8s.io/clusterworkflowtemplates.argoproj.io created
+$ kubectl apply -n argo -f https://raw.githubusercontent.com/argoproj/argo-workflows/stable/manifests/quick-start-postgres.yaml 
+customresourcedefinition.apiextensions.k8s.io/clusterworkflowtemplates.argoproj.io created
 customresourcedefinition.apiextensions.k8s.io/cronworkflows.argoproj.io created
 customresourcedefinition.apiextensions.k8s.io/workfloweventbindings.argoproj.io created
 customresourcedefinition.apiextensions.k8s.io/workflows.argoproj.io created
