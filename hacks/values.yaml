@@ -5,6 +5,10 @@ falcosidekick:
       customHeaders: Falcon:true\,Stuff:yes
   enabled: true
 
+ebpf:
+  # Enable eBPF support for Falco
+  enabled: true
+
 customRules:
   # Applications which are expected to communicate with the Kubernetes API
   rules_user_known_k8s_api_callers.yaml: |-

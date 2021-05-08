@@ -14,38 +14,95 @@ After that, we realized that we can use _Argo Events_ and _Argo Workflows_ to do
 
 Let's start with quick a introduction of the tooling.
 
-# What is Falco? [¶](github.com/falcosecurity/falco)
+## What is Falco? [¶](github.com/falcosecurity/falco)
+
 Falco, the open source cloud native runtime security project, is one of the leading open source Kubernetes threat detection engines. Falco was created by Sysdig in 2016 and is the first runtime security project to join CNCF as an incubation-level project.
 
-# What is Falcosidekick? [¶](https://github.com/falcosecurity/falcosidekick) 
+## What is Falcosidekick? [¶](https://github.com/falcosecurity/falcosidekick)
+
 A simple daemon for connection Falco to your ecosystem (alerting, logging, metrology, etc).
 
-# What is Argo Workflows? [¶](https://argoproj.github.io/argo-workflows/#what-is-argo-workflows)
+## What is Argo Workflows? [¶](https://argoproj.github.io/argo-workflows/#what-is-argo-workflows)
+
 Argo Workflows is an open source container-native workflow engine for orchestrating parallel jobs on Kubernetes. Argo Workflows are declared through a Kubernetes CRD (Custom Resource Definition).
 
-# What is Argo Events? [¶](https://argoproj.github.io/argo-events/#what-is-argo-events)
+## What is Argo Events? [¶](https://argoproj.github.io/argo-events/#what-is-argo-events)
+
 Argo Events is an event-driven workflow automation framework for Kubernetes which helps you trigger K8s objects, Argo Workflows, Serverless workloads, and others by events from variety of sources like webhook, s3, schedules, messaging queues, gcp pubsub, sns, sqs, etc.
 
-# Prerequisites
+## Prerequisites
 
-* minikube v1.19.0
+* minikube v1.19.0 or kind v0.10.0
 * helm v3.5.4+g1b5edb6
 * kubectl v1.21.0
 * argo v3.0.2
 * ko v0.8.2
 
-# Demo
+## Demo
 
 Let's start with explaining a little bit what we want to achieve in this demo. Basically, Falco, the container runtime security tool, is going to detect an unexpected behaviour at host level, then it will trigger an alert and send it to Falcosidekick. Falcosidekick has _Webhook_ output type we can configure to notify the event source of _Argo Events_. Then, _Argo Events_  will trigger the [argoWorkFlowTrigger](https://github.com/argoproj/argo-events/blob/master/api/sensor.md#argoproj.io/v1alpha1.ArgoWorkflowTrigger) type of trigger of _Argo Workflows_, and this workflow will create a _pod delete_ pod in charge of terminating the compromised pod.
 
 Falco --> Falcosidekick W/webhook --> Argo Events W/webhook --> Argo Workflows W/argoWorkFlowTrigger
 
 Now, let's start with creating our local Kubernetes cluster.
+
+### Minikube
+
 ```bash
-$ minikube start
+minikube start
 ```
 
+### Kind
+
+If you rather use kind.
+
+```shell
+# kind config file
+cat <<'EOF' >> kind-config.yaml.yaml
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+  image: kindest/node:v1.20.2
+  extraMounts:
+    # allow Falco to use devices provided by the kernel module
+  - hostPath: /dev
+    containerPath: /dev
+    # allow Falco to use the Docker unix socket
+  - hostPath: /var/run/docker.sock
+    containerPath: /var/run/docker.sock
+- role: worker
+  image: kindest/node:v1.20.2
+  extraMounts:
+    # allow Falco to use devices provided by the kernel module
+  - hostPath: /dev
+    containerPath: /dev
+    # allow Falco to use the Docker unix socket
+  - hostPath: /var/run/docker.sock
+    containerPath: /var/run/docker.sock
+- role: worker
+  image: kindest/node:v1.20.2
+  extraMounts:
+    # allow Falco to use devices provided by the kernel module
+  - hostPath: /dev
+    containerPath: /dev
+    # allow Falco to use the Docker unix socket
+  - hostPath: /var/run/docker.sock
+    containerPath: /var/run/docker.sock
+EOF
+
+# start the kind cluster
+
+kind create cluster --config=./config-kind.yaml
+
+```
+
+> Kind is verified on on linux client only.
+
+### ArgoCD
+
 Then, install _Argo Events_ and _Argo Workflows_ components.
+
 ```bash
 # Argo Events Installation
 $ kubectl create namespace argo-events
@@ -74,7 +131,7 @@ eventbus.argoproj.io/default created
 $ kubectl create namespace argo
 namespace/argo created
 
-$ kubectl apply -n argo -f https://raw.githubusercontent.com/argoproj/argo-workflows/stable/manifests/quick-start-postgres.yaml 
+$ kubectl apply -n argo -f https://raw.githubusercontent.com/argoproj/argo-workflows/stable/manifests/quick-start-postgres.yaml
 customresourcedefinition.apiextensions.k8s.io/clusterworkflowtemplates.argoproj.io created
 customresourcedefinition.apiextensions.k8s.io/cronworkflows.argoproj.io created
 customresourcedefinition.apiextensions.k8s.io/workfloweventbindings.argoproj.io created
@@ -114,6 +171,7 @@ deployment.apps/workflow-controller created
 ```
 
 Let's verify if everything is working before we move on to the next step.
+
 ```bash
 $ kubectl get pods --namespace argo-events
 NAME                                      READY   STATUS    RESTARTS   AGE
@@ -133,6 +191,7 @@ workflow-controller-d9cbfcc86-tm2kf   1/1     Running   2          5m32s
 ```
 
 Let's install Falco and Falcosidekick.
+
 ```bash
 $ helm upgrade --install falco falcosecurity/falco \
 --namespace falco \
@@ -155,6 +214,7 @@ No further action should be required.
 ```
 
 Let's verify if all components for falco are up and running.
+
 ```bash
 $ kubectl get pods --namespace falco
 NAME                                  READY   STATUS    RESTARTS   AGE
@@ -164,6 +224,7 @@ falco-zwxwz                           1/1     Running   0          68s
 ```
 
 Now, we are ready to set up our workflow by creating the event source and the trigger.
+
 ```bash
 # Create event source
 $ kubectl apply -f webhooks/webhook.yaml
@@ -201,7 +262,7 @@ sensor.argoproj.io/webhook created
 $ kubectl get sensors --namespace argo-events
 NAME      AGE
 webhook   5s
- 
+
 $ kubectl get pods --namespace argo-events
 NAME                                         READY   STATUS    RESTARTS   AGE
 eventbus-controller-7666b44ff7-k8bjf         1/1     Running   0          25m
@@ -214,7 +275,7 @@ webhook-eventsource-z9bg6-6769c7bbc8-c6tff   1/1     Running   0          8m11s
 webhook-sensor-44w7w-7dcb9f886d-bnh8f        1/1     Running   0          74s # <- Pod will create workflow.
 ```
 
-> We use google/ko project to build and push container images, but you don't have to do this, we already built an image and pushed it to the registry. If you want to build your own image, install google/ko project and run the command below after having changed the image version inside sensors/sensors-workflow.yaml 
+> We use google/ko project to build and push container images, but you don't have to do this, we already built an image and pushed it to the registry. If you want to build your own image, install google/ko project and run the command below after having changed the image version inside sensors/sensors-workflow.yaml
 > `KO_DOCKER_REPO=devopps ko publish . --push=true -B`
 
 There is one more thing we need to do, this is installation of [argo CLI](https://argoproj.github.io/argo-workflows/cli/) for managing worklows.
@@ -237,6 +298,7 @@ argo version
 ```
 
 Now, let's test the whole environment. We are going to create an alpine based container, then we'll `exec`` into it. At moment we'll exec into the container, Falco will detect it and you should see the status of the Pod as _Terminating_.
+
 ```bash
 $ kubectl run alpine --namespace default --image=alpine --restart='Never' -- sh -c "sleep 600"
 pod/alpine created
@@ -247,4 +309,3 @@ $ kubectl exec -i --tty alpine --namespace default -- sh -c "uptime" # this will
 You should see the similar outputs like the following screen:
 
 ![screen_shot](./screenshot.png)
-
