@@ -14,6 +14,26 @@ After that, we realized that we can use _Argo Events_ and _Argo Workflows_ to do
 
 Let's start with quick a introduction of the tooling.
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [What is Falco? ¶](#what-is-falco-%C2%B6)
+- [What is Falcosidekick? ¶](#what-is-falcosidekick-%C2%B6)
+- [What is Argo Workflows? ¶](#what-is-argo-workflows-%C2%B6)
+- [What is Argo Events? ¶](#what-is-argo-events-%C2%B6)
+- [Prerequisites](#prerequisites)
+- [Demo](#demo)
+  - [Minikube](#minikube)
+  - [Kind](#kind)
+  - [Install Argo Events and Argo Workflows](#install-argo-events-and-argo-workflows)
+  - [Install Falco and Falcosidekick](#install-falco-and-falcosidekick)
+  - [Install Webhook and Sensor](#install-webhook-and-sensor)
+  - [Install argo CLI](#install-argo-cli)
+  - [Test](#test)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 ## What is Falco? [¶](github.com/falcosecurity/falco)
 
 Falco, the open source cloud native runtime security project, is one of the leading open source Kubernetes threat detection engines. Falco was created by Sysdig in 2016 and is the first runtime security project to join CNCF as an incubation-level project.
@@ -99,7 +119,7 @@ kind create cluster --config=./config-kind.yaml
 
 > Kind is verified on on linux client only.
 
-### ArgoCD
+### Install Argo Events and Argo Workflows
 
 Then, install _Argo Events_ and _Argo Workflows_ components.
 
@@ -190,6 +210,8 @@ postgres-6b5c55f477-dp9n2             1/1     Running   0          5m32s
 workflow-controller-d9cbfcc86-tm2kf   1/1     Running   2          5m32s
 ```
 
+### Install Falco and Falcosidekick
+
 Let's install Falco and Falcosidekick.
 
 ```bash
@@ -222,6 +244,8 @@ falco-falcosidekick-9f5dc66f5-nmfdp   1/1     Running   0          68s
 falco-falcosidekick-9f5dc66f5-wnm2r   1/1     Running   0          68s
 falco-zwxwz                           1/1     Running   0          68s
 ```
+
+### Install Webhook and Sensor
 
 Now, we are ready to set up our workflow by creating the event source and the trigger.
 
@@ -278,6 +302,8 @@ webhook-sensor-44w7w-7dcb9f886d-bnh8f        1/1     Running   0          74s # 
 > We use google/ko project to build and push container images, but you don't have to do this, we already built an image and pushed it to the registry. If you want to build your own image, install google/ko project and run the command below after having changed the image version inside sensors/sensors-workflow.yaml
 > `KO_DOCKER_REPO=devopps ko publish . --push=true -B`
 
+### Install argo CLI
+
 There is one more thing we need to do, this is installation of [argo CLI](https://argoproj.github.io/argo-workflows/cli/) for managing worklows.
 
 ```bash
@@ -296,6 +322,8 @@ mv ./argo-darwin-amd64 /usr/local/bin/argo
 # Test installation
 argo version
 ```
+
+### Test
 
 Now, let's test the whole environment. We are going to create an alpine based container, then we'll `exec`` into it. At moment we'll exec into the container, Falco will detect it and you should see the status of the Pod as _Terminating_.
 
