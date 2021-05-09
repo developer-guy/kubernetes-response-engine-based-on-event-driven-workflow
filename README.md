@@ -30,7 +30,9 @@ Let's start with quick a introduction of the tooling.
   - [Install Falco and Falcosidekick](#install-falco-and-falcosidekick)
   - [Install Webhook and Sensor](#install-webhook-and-sensor)
   - [Install argo CLI](#install-argo-cli)
+- [Argo Worfklows UI](#argo-worfklows-ui)
   - [Test](#test)
+- [Furthermore](#furthermore)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -323,9 +325,19 @@ mv ./argo-darwin-amd64 /usr/local/bin/argo
 argo version
 ```
 
+## Argo Worfklows UI
+
+Argo Workflows v3.0 comes with a new UI that now also supports Argo Events! The UI is also more robust and reliable.
+
+You can basically reach out the UI from _localhost_ with doing port-forward the _Kubernetes_ service. There is also needed for using _argo CLI_ properly.
+
+```bash
+$ kubectl -n argo port-forward svc/argo-server 2746:2746
+```
+
 ### Test
 
-Now, let's test the whole environment. We are going to create an alpine based container, then we'll `exec`` into it. At moment we'll exec into the container, Falco will detect it and you should see the status of the Pod as _Terminating_.
+Now, let's test the whole environment. We are going to create an alpine based container, then we'll `exec` into it. At moment we'll exec into the container, Falco will detect it and you should see the status of the Pod as _Terminating_.
 
 ```bash
 $ kubectl run alpine --namespace default --image=alpine --restart='Never' -- sh -c "sleep 600"
@@ -337,3 +349,8 @@ $ kubectl exec -i --tty alpine --namespace default -- sh -c "uptime" # this will
 You should see the similar outputs like the following screen:
 
 ![screen_shot](./screenshot.png)
+
+## Furthermore
+The _Falcosidekick_ and _Argo Events_ are both _CloudEvents_ compliant. [CloudEvents](https://cloudevents.io) is a specification for describing event data in a common way. CloudEvents seeks to dramatically simplify event declaration and delivery across services, platforms, and beyond! 
+
+You can basically achieve the same demo by using _CloudEvents_ instead of _Webhook_ to trigger an action in the _Argo Workflows_. If you are curios about how _CloudEvents_ and _Falco_ can be related with each other, there is a new blog post on [Falco Blog](https://falco.org/blog/) named _Kubernetes Response Engine, Part 3: Falcosidekick + Knative_, you should definitely check that out.
