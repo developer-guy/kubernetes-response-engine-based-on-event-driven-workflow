@@ -37,7 +37,7 @@ Let's start with quick a introduction of the tooling.
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-## What is Falco? [¶](github.com/falcosecurity/falco)
+## What is Falco? [¶](https://github.com/falcosecurity/falco)
 
 Falco, the open source cloud native runtime security project, is one of the leading open source Kubernetes threat detection engines. Falco was created by Sysdig in 2016 and is the first runtime security project to join CNCF as an incubation-level project.
 
