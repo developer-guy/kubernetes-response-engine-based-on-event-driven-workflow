@@ -333,6 +333,8 @@ You can basically reach out the UI from _localhost_ with doing port-forward the 
 
 ```bash
 $ kubectl -n argo port-forward svc/argo-server 2746:2746
+Forwarding from 127.0.0.1:2746 -> 2746
+Forwarding from [::1]:2746 -> 2746
 ```
 
 ### Test
