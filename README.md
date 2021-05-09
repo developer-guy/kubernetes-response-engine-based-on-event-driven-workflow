@@ -350,7 +350,7 @@ $ kubectl exec -i --tty alpine --namespace default -- sh -c "uptime" # this will
 
 You should see the similar outputs like the following screen:
 
-![screen_shot](./screenshot.png)
+![screen_shot](./assets/screenshot.png)
 
 ## Furthermore
 The _Falcosidekick_ and _Argo Events_ are both _CloudEvents_ compliant. [CloudEvents](https://cloudevents.io) is a specification for describing event data in a common way. CloudEvents seeks to dramatically simplify event declaration and delivery across services, platforms, and beyond! 
