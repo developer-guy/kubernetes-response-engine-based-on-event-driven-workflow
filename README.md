@@ -30,7 +30,7 @@ Let's start with quick a introduction of the tooling.
   - [Install Falco and Falcosidekick](#install-falco-and-falcosidekick)
   - [Install Webhook and Sensor](#install-webhook-and-sensor)
   - [Install argo CLI](#install-argo-cli)
-- [Argo Worfklows UI](#argo-worfklows-ui)
+  - [Argo Worfklows UI](#argo-worfklows-ui)
   - [Test](#test)
 - [Furthermore](#furthermore)
 
@@ -325,7 +325,7 @@ mv ./argo-darwin-amd64 /usr/local/bin/argo
 argo version
 ```
 
-## Argo Worfklows UI
+### Argo Worfklows UI
 
 Argo Workflows v3.0 comes with a new UI that now also supports Argo Events! The UI is also more robust and reliable.
 
