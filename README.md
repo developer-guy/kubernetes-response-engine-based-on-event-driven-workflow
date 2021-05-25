@@ -7,6 +7,8 @@ If you want to get more details about the concept and how we use serverless plat
 > * [Kubernetes Response Engine, Part 1 : Falcosidekick + Kubeless](https://falco.org/blog/falcosidekick-reponse-engine-part-1-kubeless/)
 > * [Kubernetes Response Engine, Part 2 : Falcosidekick + OpenFaas](https://falco.org/blog/falcosidekick-reponse-engine-part-2-openfaas/)
 > * [Kubernetes Response Engine, Part 3 : Falcosidekick + Knative](https://falco.org/blog/falcosidekick-reponse-engine-part-3-knative/)
+> * [Kubernetes Response Engine, Part 4: Falcosidekick + Tekton](https://falco.org/blog/falcosidekick-response-engine-part-4-tekton/)
+> * [Kubernetes Response Engine, Part 5: Falcosidekick + Argo](https://falco.org/blog/falcosidekick-reponse-engine-part-5-argo/)
 
 Recently, a community member, [Edvin](https://github.com/NissesSenap), came with the great idea to use a Cloud Native Workflow system to implement same kind of scenario. Following that, he implemented it by using _Tekton_ and _Tekton Trigger_. To get more details about his work, please follow this [repository](https://github.com/NissesSenap/falcosidekick-tekton).
 
